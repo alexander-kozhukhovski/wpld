@@ -1,0 +1,114 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:2.6
+    container_name: ${APP_NAME}-traefik
+    restart: unless-stopped
+    command:
+      - --accesslog
+      - --api.insecure=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --providers.docker=true
+      - --providers.file.directory=/configuration/
+      - --providers.file.watch=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/traefik/config:/configuration/
+      - ./docker/traefik/certs:/etc/certs:ro
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    networks:
+      - proxy
+
+  mysql:
+    image: mariadb:10.4
+    container_name: ${APP_NAME}-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    command:
+      - --default_authentication_plugin=mysql_native_password,
+      - --character-set-server=utf8mb4,
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    healthcheck:
+      test: mysqladmin ping -h mysql -u root --password=$$MYSQL_ROOT_PASSWORD
+      timeout: 60s
+      interval: 10s
+      retries: 60
+    networks:
+      - proxy
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    container_name: ${APP_NAME}-phpmyadmin
+    restart: unless-stopped
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    ports:
+      - "8090:80"
+    links:
+      - mysql
+    networks:
+      - proxy
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: ${APP_NAME}-mail
+    restart: unless-stopped
+    logging:
+      driver: 'none'
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - proxy
+
+  composer:
+    image: composer
+    container_name: ${APP_NAME}-composer
+    restart: "no"
+    working_dir: /var/www/html
+    volumes:
+      - ./app:/var/www/html
+    networks:
+      - proxy
+
+  wpcli:
+    image: wordpress:cli
+    container_name: ${APP_NAME}-wpcli
+    restart: "no"
+    volumes:
+      - ./docker/php/conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      - ./app:/var/www/html
+    environment:
+      - WORDPRESS_DB_USER=root
+      - WORDPRESS_DB_PASSWORD=${DB_ROOT_PASSWORD}
+      - WORDPRESS_TABLE_PREFIX=wpld_
+    depends_on:
+      - mysql
+      - wordpress
+    links:
+      - mysql
+    entrypoint: wp
+    command: "--info"
+    networks:
+      - proxy
+
+volumes:
+  db_data:
+    name: ${APP_NAME}-db_data
+
+networks:
+  proxy:
+    name: ${APP_NAME}-proxy

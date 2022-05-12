@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+bash ./docker/scripts/message.sh text ''
+bash ./docker/scripts/message.sh text ' __        ______  _     ____'
+bash ./docker/scripts/message.sh text ' \ \      / /  _ \| |   |  _ \ '
+bash ./docker/scripts/message.sh text '  \ \ /\ / /| |_) | |   | | | |'
+bash ./docker/scripts/message.sh text '   \ V  V / |  __/| |___| |_| |'
+bash ./docker/scripts/message.sh text '    \_/\_/  |_|   |_____|____/'
+bash ./docker/scripts/message.sh text ''
+bash ./docker/scripts/message.sh text 'Version: 1.0'
+bash ./docker/scripts/message.sh text ''
