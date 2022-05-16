@@ -66,7 +66,7 @@ uninstall: ## Uninstall docker project
 rebuild: ## Rebuild docker project
 	bash docker/scripts/sign.sh
 	bash docker/scripts/message.sh info "Rebuilding the project..."
-	docker-compose up --rebuild --force-recreate -d
+	docker-compose up --build --force-recreate -d
 
 wpcli: ## Run WP-CLI commands. Put wpcli parameters into $args, e.g. make wpcli args='plugin list --status="active"
 	bash docker/scripts/sign.sh
