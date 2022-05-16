@@ -1,8 +1,13 @@
-.env
+# IDE files
 .DS_Store
 .idea
+
+# Configs
+.env
+!docker/.env
+
+# Application
 app
 vendor
-docker/sql
 docker/traefik/certs
 db-backups

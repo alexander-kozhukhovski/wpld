@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
-file=db_
 date=$(date '+%Y-%m-%d')
-fileName="$file-$date"
+fileName="$2-$date"
+
+if [ ! -d "db-backups" ]; then
+  mkdir db-backups
+fi
 
 if [[ -f "db-backups/$fileName.sql.gz" || -L "db-backups/$fileName.sql.gz" ]]; then
-  i=0
+  i=1
   while [[ -f "db-backups/$fileName-$i.sql.gz" || -L "db-backups/$fileName-$i.sql.gz" ]]; do
-    i++
+    i=$((i+1))
   done
   fileName=$fileName-$i
 fi
